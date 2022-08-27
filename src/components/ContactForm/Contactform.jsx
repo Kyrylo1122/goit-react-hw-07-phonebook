@@ -16,7 +16,6 @@ export default function ContactForm({ onSubmitForm }) {
     const id = nanoid();
     value.id = id;
     onSubmitForm(value);
-    console.log(value);
     resetForm();
   };
 

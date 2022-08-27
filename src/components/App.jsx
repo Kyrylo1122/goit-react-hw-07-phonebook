@@ -1,37 +1,35 @@
-import { useState, useEffect } from 'react';
 import ContactForm from './ContactForm/Contactform';
 import { Filter } from './Filter/Filter';
 import { ContactList } from './ContactList/ContactList';
 import { Box } from './Box/Box';
+import { addContact, removeContact, cFilter } from './redux/slice';
+
+import { useDispatch, useSelector } from 'react-redux';
 
 export default function App() {
-  const [contacts, setContacts] = useState(() => {
-    const parsedItems = JSON.parse(localStorage.getItem('contacts'));
-    return parsedItems ? parsedItems : [];
-  });
-  const [filter, setFilter] = useState('');
-
-  useEffect(() => {
-    localStorage.setItem('contacts', JSON.stringify(contacts));
-  }, [contacts]);
-
-  const changeFilter = e => setFilter(e.currentTarget.value);
+  const dispatch = useDispatch();
+  const reduxContacts = useSelector(state => state.contacts.items);
 
   const onSubmitForm = data => {
-    const isExist = contacts.map(e => e.name).includes(data.name);
+    const isExist = reduxContacts.map(e => e.name).includes(data.name);
     if (isExist) {
       alert('Name already exist');
       return;
     }
-    setContacts(prevState => [...prevState, data]);
+    dispatch(addContact(data));
   };
 
-  const deleteContact = id =>
-    setContacts(prevState => prevState.filter(e => e.id !== id));
+  const deleteContact = id => {
+    dispatch(removeContact(id));
+  };
+  const reduxFilter = useSelector(state => state.contacts.filter);
 
-  const visibleContacts = contacts.filter(e =>
-    e.name.toLowerCase().includes(filter.toLowerCase())
+  const changeFilter = e => dispatch(cFilter(e.currentTarget.value));
+
+  const visibleContacts = reduxContacts.filter(e =>
+    e.name.toLowerCase().includes(reduxFilter.toLowerCase())
   );
+
   return (
     <Box display="flex">
       <Box ml="auto" mr="auto" textAlign="center">
@@ -39,7 +37,9 @@ export default function App() {
         <ContactForm onSubmitForm={onSubmitForm} />
         <h2>Contacts</h2>
         <Filter changeFilter={changeFilter} />
-        <ContactList contacts={visibleContacts} deleteCon={deleteContact} />
+        {reduxContacts && (
+          <ContactList contacts={visibleContacts} deleteCon={deleteContact} />
+        )}
       </Box>
     </Box>
   );
